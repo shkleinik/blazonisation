@@ -50,7 +50,7 @@ namespace Blazonisation.Forms
 
         private void miSaveResult_Click(object sender, RoutedEventArgs e)
         {
-
+            // Note: add implementation
         }
 
         private void miExit_Click(object sender, RoutedEventArgs e)
