@@ -54,6 +54,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -77,6 +78,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BLL\adorner.cs" />
+    <Compile Include="BLL\FigureDefiner.cs" />
+    <Compile Include="BLL\ShieldFinder.cs" />
+    <Compile Include="BLL\ZondLine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -145,7 +150,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AppData\" />
-    <Folder Include="BLL\" />
     <Folder Include="DAL\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

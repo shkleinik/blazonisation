@@ -1,26 +1,38 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using System.Windows.Media.Animation;
+﻿//----------------------------------------------------------------------------------
+// <copyright file="MainWindow.xaml.cs" company="BNTU Inc.">
+//     Copyright (c) BNTU Inc. All rights reserved.
+// </copyright>
+// <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
+//----------------------------------------------------------------------------------
 
 namespace Blazonisation.Forms
 {
+    using System;
+    using System.Drawing;
+    using System.IO;
+    using System.Windows;
+    using System.Windows.Documents;
+    using System.Windows.Input;
+    using System.Windows.Media.Animation;
+    using System.Windows.Media.Imaging;
+    using BLL;
+    using Microsoft.Win32;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow
     {
-
         #region Constants
         private const string MSG_STARTED = "Started . . .";
         private const string STATE_PATTERN = "Recognition state : {0}";
+        private const string MSG_READY = "Ready for work";
+        private const string CROPPED_EMBLEM_PATH = "Cropped emblem.bmp";
         #endregion
 
         #region Fields
         private string pathToEmblem;
+        private RubberbandAdorner cropSelector;
         #endregion
 
         #region Constructor
@@ -31,50 +43,123 @@ namespace Blazonisation.Forms
         #endregion
 
         #region Menu items events
-        private void miOpen_Click(object sender, RoutedEventArgs e)
+        private void On_miOpen_Click(object sender, RoutedEventArgs e)
         {
             var fileOpenDialog = new OpenFileDialog
                                      {
                                          Filter = "Images | *.bmp; *.png; *.jpg; *.jpeg",
                                          Multiselect = false
                                      };
-            if ((bool)fileOpenDialog.ShowDialog(this))
-            {
-                pathToEmblem = fileOpenDialog.FileName;
-                imgEmblemHolder.Source = new BitmapImage(new Uri(pathToEmblem));
-                imgEmblemHolder.Visibility = Visibility.Visible;
-                brdEmblemHolder.Visibility = Visibility.Visible;
-                lblState.Visibility = Visibility.Visible;
-            }
+
+            if (!((bool)fileOpenDialog.ShowDialog(this)))
+                return;
+
+            pathToEmblem = fileOpenDialog.FileName;
+            imgEmblemHolder.Source = new BitmapImage(new Uri(pathToEmblem));
+            imgEmblemHolder.Visibility = Visibility.Visible;
+            brdEmblemHolder.Visibility = Visibility.Visible;
         }
 
-        private void miSaveResult_Click(object sender, RoutedEventArgs e)
+        private void On_miSaveResult_Click(object sender, RoutedEventArgs e)
         {
             // Note: add implementation
         }
 
-        private void miExit_Click(object sender, RoutedEventArgs e)
+        private void On_miExit_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
         #endregion
 
-        #region Events
-        private void brdEmblemHolder_MouseLeftButtonDown(object sender, MouseEventArgs e)
+        #region Events handling
+        private void On_MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            brdEmblemHolder.MouseLeftButtonDown -= brdEmblemHolder_MouseLeftButtonDown;
+            lblState.Visibility = Visibility.Visible;
+            SetRecognitionState(MSG_READY);
+            TurnOnCropSelector();
+        }
+
+        private void On_brdEmblemHolder_MouseLeftButtonDown(object sender, MouseEventArgs e)
+        {
+            brdEmblemHolder.MouseLeftButtonDown -= On_brdEmblemHolder_MouseLeftButtonDown;
+            imgEmblemHolder.ToolTip = null;
             Animate();
             SetRecognitionState(MSG_STARTED);
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void On_imgEmblemHolder_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var anchor = e.GetPosition(imgEmblemHolder);
+            cropSelector.CaptureMouse();
+            cropSelector.StartSelection(anchor);
+            // CropButton.IsEnabled = true;
+        }
+
+        private void On_btnStartRecognition_Click(object sender, EventArgs e)
+        {
+            Cursor = Cursors.Wait;
+
+            // find shield
+            var shieldFinder = new ShieldFinder(new Bitmap(pathToEmblem));
+            var pathCroppedEmblem = AppDomain.CurrentDomain.BaseDirectory + CROPPED_EMBLEM_PATH;
+            var uriCroppedEmblem = new Uri(pathCroppedEmblem);
+
+            if (File.Exists(pathCroppedEmblem))
+                File.Delete(pathCroppedEmblem);
+
+            shieldFinder.emblem.Save(pathCroppedEmblem);
+            imgEmblemHolder.Source = new BitmapImage(uriCroppedEmblem);
+
+            cropSelector.DrawSelection(ScaleRectangle(shieldFinder.ShieldRect));
+            // ---
+            shieldFinder.Shield.Save(AppDomain.CurrentDomain.BaseDirectory + "Shield.bmp");
+            // ---
+            // find figures
+            var figureDefiner = new FigureDefiner(shieldFinder.Shield);
+            MessageBox.Show(figureDefiner.resultOutput);
+
+            Cursor = Cursors.Arrow;
+        }
+
+        private void On_MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Width = e.NewSize.Width;
             Height = e.NewSize.Height;
+            if (!String.IsNullOrEmpty(pathToEmblem))
+                Animate();
         }
         #endregion
 
         #region Methods
+
+        private void TurnOnCropSelector()
+        {
+            var layer = AdornerLayer.GetAdornerLayer(imgEmblemHolder);
+            cropSelector = new RubberbandAdorner(imgEmblemHolder)
+                               {
+                                   Window = this
+                               };
+            layer.Add(cropSelector);
+            //#if VISUALCHILD
+            //            cropSelector.Rubberband.Visibility = Visibility.Hidden;
+            //#endif
+            //#if NoVISUALCHILD
+            //            cropSelector.ShowRect = false;
+        }
+
+        private Rectangle ScaleRectangle(Rectangle rectangle)
+        {
+            var scaleX = imgEmblemHolder.ActualWidth / imgEmblemHolder.Source.Width;
+            var scaleY = imgEmblemHolder.ActualHeight / imgEmblemHolder.Source.Height;
+
+            return new Rectangle(
+                                Convert.ToInt32(rectangle.X * scaleX),
+                                Convert.ToInt32(rectangle.Y * scaleY),
+                                Convert.ToInt32(rectangle.Width * scaleX),
+                                Convert.ToInt32(rectangle.Height * scaleY)
+                                );
+        }
+
         private void SetRecognitionState(string state)
         {
             lblState.Content = String.Format(STATE_PATTERN, state);
@@ -82,94 +167,65 @@ namespace Blazonisation.Forms
 
         private void Animate()
         {
-            var d = new DoubleAnimation
-                        {
-                            From = 0.0,
-                            To = (-Width / 2 + brdEmblemHolder.Width / 2 + leftLine.Margin.Left + 30),
-                            Duration = new Duration(TimeSpan.Parse("0:0:0.3")),
-                            AutoReverse = false
-                        };
-            brdTranslateEmblem.BeginAnimation(TranslateTransform.XProperty, d);
+            brdEmblemHolder.VerticalAlignment = VerticalAlignment.Center;
+            brdEmblemHolder.HorizontalAlignment = HorizontalAlignment.Left;
+            brdEmblemHolder.Margin = new Thickness(65, 0, 0, 0);
 
-            //          Components animation
-            // Shield
-            var daBrdShield = new DoubleAnimation
-                                  {
-                                      From = 0.0,
-                                      To = Width * .6,
-                                      Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                      AutoReverse = false
-                                  };
+            var x = Width * 0.30;
+            var shieldY = Height * 0.07;
+            var colorsY = Height * 0.27;
+            var devisionsY = Height * 0.47;
+            var figuresY = Height * 0.67;
 
-            brdTranslateShield.BeginAnimation(TranslateTransform.XProperty, daBrdShield);
+            var shieldThicknessAnimation = new ThicknessAnimation
+            {
+                From = brdShieldHolder.Margin,
+                To = new Thickness(0, shieldY, x, 0),
+                Duration = new Duration(TimeSpan.Parse("0:0:0.3")),
+                AutoReverse = false
+            };
 
-            daBrdShield = new DoubleAnimation
-                              {
-                                  From = 0.0,
-                                  To = .25 * Height,
-                                  Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                  AutoReverse = false
-                              };
-            brdTranslateShield.BeginAnimation(TranslateTransform.YProperty, daBrdShield);
-            //  Devision
-            var daBrdDevision = new DoubleAnimation
-                                    {
-                                        From = 0.0,
-                                        To = Width * .6,
-                                        Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                        AutoReverse = false
-                                    };
+            brdShieldHolder.BeginAnimation(MarginProperty, shieldThicknessAnimation);
 
-            brdTranslateDivision.BeginAnimation(TranslateTransform.XProperty, daBrdDevision);
+            var colorsThicknessAnimation = new ThicknessAnimation
+                                                {
+                                                    From = brdColorsHolder.Margin,
+                                                    To = new Thickness(0, colorsY, x, 0),
+                                                    Duration = new Duration(TimeSpan.Parse("0:0:0.3")),
+                                                    AutoReverse = false
+                                                };
 
-            daBrdDevision = new DoubleAnimation
-                                {
-                                    From = 0.0,
-                                    To = -.5 * Height,
-                                    Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                    AutoReverse = false
-                                };
-            brdTranslateDivision.BeginAnimation(TranslateTransform.YProperty, daBrdDevision);
-            // Colors
-            var daBrdColors = new DoubleAnimation
-                                  {
-                                      From = 0.0,
-                                      To = -Width / 2,
-                                      Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                      AutoReverse = false
-                                  };
+            brdColorsHolder.BeginAnimation(MarginProperty, colorsThicknessAnimation);
 
-            brdTranslateColors.BeginAnimation(TranslateTransform.XProperty, daBrdColors);
+            var devisionsThicknessAnimation = new ThicknessAnimation
+                                                  {
+                                                      From = brdDevisionHolder.Margin,
+                                                      To = new Thickness(0, devisionsY, x, 0),
+                                                      Duration = new Duration(TimeSpan.Parse("0:0:0.3")),
+                                                      AutoReverse = false
+                                                  };
 
-            daBrdColors = new DoubleAnimation
-                              {
-                                  From = 0.0,
-                                  To = -.7 * Height,
-                                  Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                  AutoReverse = false
-                              };
-            brdTranslateColors.BeginAnimation(TranslateTransform.YProperty, daBrdColors);
-            // Figures
-            var daBrdFigures = new DoubleAnimation
-                                   {
-                                       From = 0.0,
-                                       To = -Width / 2,
-                                       Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                       AutoReverse = false
-                                   };
+            brdDevisionHolder.BeginAnimation(MarginProperty, devisionsThicknessAnimation);
 
-            brdTranslateFigures.BeginAnimation(TranslateTransform.XProperty, daBrdFigures);
+            var figuresThicknessAnimation = new ThicknessAnimation
+                                       {
+                                           From = brdFiguresHolder.Margin,
+                                           To = new Thickness(0, figuresY, x, 0),
+                                           Duration = new Duration(TimeSpan.Parse("0:0:0.3")),
+                                           AutoReverse = false
+                                       };
 
-            daBrdFigures = new DoubleAnimation
-                               {
-                                   From = 0.0,
-                                   To = .8 * Height,
-                                   Duration = new Duration(TimeSpan.Parse("0:0:1")),
-                                   AutoReverse = false
-                               };
-            brdTranslateFigures.BeginAnimation(TranslateTransform.YProperty, daBrdFigures);
+            brdFiguresHolder.BeginAnimation(MarginProperty, figuresThicknessAnimation);
+
+            var buttonVisibilityAnimation = new DoubleAnimation
+                                                {
+                                                    From = 0,
+                                                    To = 1,
+                                                    Duration = new Duration(TimeSpan.Parse("0:0:0.5"))
+                                                };
+            btnStartRecognition.BeginAnimation(OpacityProperty, buttonVisibilityAnimation);
+
         }
         #endregion
     }
 }
-
