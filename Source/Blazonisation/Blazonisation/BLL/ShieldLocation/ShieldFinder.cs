@@ -5,7 +5,9 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-namespace Blazonisation.BLL
+
+
+namespace Blazonisation.BLL.ShieldLocation
 {
     using System;
     using System.Drawing;
@@ -186,11 +188,6 @@ namespace Blazonisation.BLL
         private void FindLeftTop()
         {
             var isShieldFound = false;
-
-            //var x1 = emblemRect.X;
-            //var x2 = emblemRect.X + emblemRect.Width / 2;
-            //var y1 = emblemRect.Y;
-            //var y2 = emblemRect.Height;
             var x1 = 0;
             var x2 = emblem.Width / 2;
             var y1 = 0;
@@ -204,13 +201,13 @@ namespace Blazonisation.BLL
 
                     if (IsBackGround(x, y))
                     {
-                        //emblem.SetPixel(x, y, Color.Violet);
+                        emblem.SetPixel(x, y, Color.Violet);
                         continue;
                     }
 
                     if (HorisontalRepeat(x, y) < scan_step)
                     {
-                        //emblem.SetPixel(x, y, Color.Red);
+                        emblem.SetPixel(x, y, Color.Red);
                         continue;
                     }
 

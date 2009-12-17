@@ -1,0 +1,103 @@
+﻿<Window x:Class="Blazonisation.Forms.TemplatesManager"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="TemplatesManager" 
+        Width="800"
+        Height="600" 
+        MinWidth="800"
+        MinHeight="600"
+        Loaded="On_TemplateManage_Loaded"
+        >
+    <Grid>
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0.3" EndPoint="1,0">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Color="#F2F7FF" Offset="0" />
+                    <GradientStop Color="#EFE8FF" Offset="0.1" />
+                    <GradientStop Color="#FFFFFF" Offset="0.3" />
+                    <GradientStop Color="#EFE8FF" Offset="0.5" />
+                    <GradientStop Color="#EFE8FF" Offset="0.6" />
+                    <GradientStop Color="#EFE8FF" Offset="0.8" />
+                    <GradientStop Color="#FFFFFF" Offset="1" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Image Name="imgGriffon"
+               Source="..\Images\Griffon.png" 
+               Stretch="Fill" 
+               Margin="140,120,140,120" 
+               StretchDirection="Both" 
+               OpacityMask="White" 
+               Opacity="0.2" 
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Center" 
+               Width="400" Height="300"
+            />
+
+        <ScrollViewer Margin="0,0,0,60">
+            <StackPanel Name="spTemplates" 
+                    Orientation="Vertical" 
+                    Margin="0,0,0,60" 
+                    ScrollViewer.CanContentScroll="False"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible">
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <TextBox 
+            Height="23" 
+            Margin="20,0,558,20" 
+            Name="tbPath" 
+            VerticalAlignment="Bottom" 
+            IsReadOnly="True"
+            />
+
+        <Button Height="23" 
+                Margin="0,0,450,20" 
+                Name="btnBrowse" 
+                VerticalAlignment="Bottom" 
+                HorizontalAlignment="Right" 
+                Width="80"
+                Click="On_btnBrowse_Click">
+            Browse
+        </Button>
+
+        <TextBox 
+            Height="23" 
+            Margin="0,0,300,20" 
+            Name="tbDescription" 
+            VerticalAlignment="Bottom" 
+            HorizontalAlignment="Right" 
+            Width="120" 
+            Text="Description . . ."
+            GotKeyboardFocus="On_tbDescription_GotKeyboardFocus"
+            LostKeyboardFocus="On_tbDescription_LostKeyboardFocus"
+            />
+
+        <ComboBox   Name="cbTypes"
+                    Margin="0,0,120,20" 
+                    Width="150"
+                    VerticalAlignment="Bottom" 
+                    HorizontalAlignment="Right" 
+                    SelectionChanged="On_cbTypes_SelectionChanged"
+            >
+            <ComboBoxItem IsSelected="True">Shield form templates</ComboBoxItem>
+            <ComboBoxItem>Colors templates</ComboBoxItem>
+            <ComboBoxItem>Divisions templates</ComboBoxItem>
+            <ComboBoxItem>Figures templates</ComboBoxItem>
+        </ComboBox>
+
+        <Button Name="btnAddTemplate" 
+                Click="On_btnAddTemplate_Click" 
+                Height="20" 
+                Width="80"
+                Margin="0,0,20,20" 
+                VerticalAlignment="Bottom" 
+                HorizontalAlignment="Right" 
+                >
+            Add template
+        </Button>
+    </Grid>
+</Window>

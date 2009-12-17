@@ -1,15 +1,15 @@
 ﻿//----------------------------------------------------------------------------------
-// <copyright file="FigureDefiner.cs" company="BNTU Inc.">
+// <copyright file="ShieldFormDefiner.cs" company="BNTU Inc.">
 //     Copyright (c) BNTU Inc. All rights reserved.
 // </copyright>
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-namespace Blazonisation.BLL
+namespace Blazonisation.BLL.ShieldForm
 {
     using System.Drawing;
 
-    public class FigureDefiner
+    public class ShieldFormDefiner
     {
         #region Fields
         public Bitmap inputBMP;
@@ -17,7 +17,7 @@ namespace Blazonisation.BLL
         #endregion
 
         #region Constructors
-        public FigureDefiner(Bitmap bmp)
+        public ShieldFormDefiner(Bitmap bmp)
         {
             inputBMP = bmp;
             resultOutput = DefineVerticalCrossings() + "_" + DefineHorizontalCrossings();

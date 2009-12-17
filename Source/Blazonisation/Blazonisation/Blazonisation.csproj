@@ -54,10 +54,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
+    <Reference Include="UIAutomationProvider">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="Forms\App.xaml">
@@ -67,6 +80,10 @@
     <Page Include="Forms\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Forms\TemplatesManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Include="Forms\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -79,9 +96,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BLL\adorner.cs" />
-    <Compile Include="BLL\FigureDefiner.cs" />
-    <Compile Include="BLL\ShieldFinder.cs" />
-    <Compile Include="BLL\ZondLine.cs" />
+    <Compile Include="BLL\Colors\ColorDetails.cs" />
+    <Compile Include="BLL\Colors\ColorDetector.cs" />
+    <Compile Include="BLL\Colors\ColorRange.cs" />
+    <Compile Include="BLL\Colors\ImageColorConverter.cs" />
+    <Compile Include="BLL\Common.cs" />
+    <Compile Include="BLL\Devisions\SectionCreator.cs" />
+    <Compile Include="BLL\Figures\FigureDefiner.cs" />
+    <Compile Include="BLL\ShieldForm\ShieldFormDefiner.cs" />
+    <Compile Include="BLL\ShieldLocation\ShieldFinder.cs" />
+    <Compile Include="DAL\Template.cs" />
+    <Compile Include="DAL\TemplateType.cs" />
+    <Compile Include="BLL\ShieldForm\ZondLine.cs" />
+    <Compile Include="DAL\TemplatesManager.cs" />
+    <Compile Include="Forms\TemplatesManager.xaml.cs">
+      <DependentUpon>TemplatesManager.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -99,6 +129,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -150,7 +181,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AppData\" />
-    <Folder Include="DAL\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
