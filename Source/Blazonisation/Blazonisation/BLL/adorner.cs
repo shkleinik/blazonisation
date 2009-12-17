@@ -22,6 +22,13 @@ namespace Blazonisation.BLL
 
         #region Properties
         public Rect SelectRect { get { return selectRect; } }
+        public System.Drawing.Rectangle Rectangle
+        {
+            get
+            {
+                return ConvertRectToRectangle(SelectRect);
+            }
+        }
         public System.Windows.Shapes.Path Rubberband { get { return rubberband; } }
         protected override int VisualChildrenCount { get { return 1; } }
         public MainWindow Window { set { window = value; } }
@@ -102,7 +109,7 @@ namespace Blazonisation.BLL
             if (3 >= selectRect.Width || 3 >= selectRect.Height)
                 rubberband.Visibility = Visibility.Hidden;
             else
-                window.btnStartRecognition.IsEnabled = true;
+                window.btnContinueRecognition.IsEnabled = true;
             ReleaseMouseCapture();
         }
 
@@ -115,6 +122,16 @@ namespace Blazonisation.BLL
         {
             return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
+
+        private static System.Drawing.Rectangle ConvertRectToRectangle(Rect rectangle)
+        {
+            return new System.Drawing.Rectangle(Convert.ToInt32(rectangle.X), 
+                                                Convert.ToInt32(rectangle.Y), 
+                                                Convert.ToInt32(rectangle.Width),
+                                                Convert.ToInt32(rectangle.Height)
+                                                );
+        }
+
         #endregion
     }
 }

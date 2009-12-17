@@ -5,11 +5,11 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-namespace Blazonisation.BLL
-{
-    using System;
-    using System.Drawing;
+using System;
+using System.Drawing;
 
+namespace Blazonisation.BLL.ShieldForm
+{
     public class ZondLine
     {
         #region Private fields
@@ -53,6 +53,9 @@ namespace Blazonisation.BLL
                 {
                     if (Math.Abs((GetAveregePixel(gBMP, gX, i) - (GetAveregePixel(gBMP, gX, i + 1)))) > tolerance)
                     {
+                        if (count > 9)
+                            continue;
+
                         colorChangeArray[count] = new Point(gX, i + 1);
                         count++;
                         i += tolerance;
@@ -66,6 +69,9 @@ namespace Blazonisation.BLL
                 {
                     if (Math.Abs((GetAveregePixel(gBMP, i, gY) - (GetAveregePixel(gBMP, i + 1, gY)))) > tolerance)
                     {
+                        if (count > 9)
+                            continue;
+
                         colorChangeArray[count] = new Point(i + 1, gY);
                         count++;
                         i += tolerance;

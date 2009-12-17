@@ -67,8 +67,11 @@
                 <Separator />
                 <MenuItem Header="Exit" Name="miExit" Click="On_miExit_Click"/>
             </MenuItem>
+            <MenuItem Header="Tamplates manager" Name="miTemplatesManager" Click="On_miManageTemplates_Click">
+                
+            </MenuItem>
             <MenuItem Header="Help">
-                <MenuItem Header="Help" Name="miHelp"/>
+                <MenuItem Header="Help" Name="miHelp" Click="On_miHelp_Click"/>
                 <Separator />
                 <MenuItem Header="About program" Name="miAbout"/>
             </MenuItem>
@@ -83,7 +86,7 @@
                 Visibility="Hidden" 
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center"
-                Width="300" Height="400" 
+                Width="400" Height="400" 
                 MouseLeftButtonDown="On_brdEmblemHolder_MouseLeftButtonDown"
             >
             <Border.BitmapEffect>
@@ -95,7 +98,7 @@
                    Visibility="Hidden" 
                    ToolTip="Click to start recognition" 
                    HorizontalAlignment="Left"
-                   MouseDown="On_imgEmblemHolder_MouseDown"
+                   MouseDown="On_imgEmblemHolder_MouseDown"                   
                 />
         </Border>
 
@@ -104,60 +107,97 @@
             Name="brdShieldHolder"
                 BorderBrush="DarkRed"
                 BorderThickness="10"
-                CornerRadius="5"
-                Margin="0,5,-150,0" 
-                Visibility="Visible" Height="102" 
-                HorizontalAlignment="Right" Width="104" VerticalAlignment="Top">
+                CornerRadius="5"                
+                Visibility="Visible" 
+                Height="102" 
+                Width="104" 
+                Margin="-150,5,0,0" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top">
             <Image Name="imgShield" Source="..\Images\Shield.png" Opacity="0.5" ToolTip="Shield's shape"/>
             <!--<Image Name="imgLoading" Source="..\Images\Loading.gif"/>-->
             
         </Border>
+        <Label Name="lblShieldForm"
+               Margin="-200, 5, 0, 0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Content="Shield form info"
+            ></Label>
 
         <Border
                 Name="brdColorsHolder"
                 BorderBrush="DarkRed"
                 BorderThickness="10"
                 CornerRadius="5"
-                Margin="0,150,-150,0" 
-                Visibility="Visible" HorizontalAlignment="Right" Width="104" Height="102" 
-                VerticalAlignment="Top">
+                Margin="-150,150,0,0" 
+                Visibility="Visible" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top"
+                Width="104" 
+                Height="102" 
+                >
             <Image Name="imgColors" Source="..\Images\Colors.png" Opacity="0.5" ToolTip="Shield's colors"/>            
         </Border>
+        <Label Name="lblColors"
+               Margin="-200, 150, 0, 0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Content="Colors info"
+            ></Label>
 
         <Border
                 Name="brdDevisionHolder"
                 BorderBrush="DarkRed"
                 BorderThickness="10"
                 CornerRadius="5"
-                Margin="0,270,-150, 0"
-                Visibility="Visible" VerticalAlignment="Top" Height="102" 
-                HorizontalAlignment="Right" Width="104">
+                Margin="-150,270,0, 0"
+                Visibility="Visible" 
+                VerticalAlignment="Top" 
+                HorizontalAlignment="Left" 
+                Height="102"                 
+                Width="104">
             <Image Name="imgDevision" Source="..\Images\Devision.png" Opacity="0.5" ToolTip="Shield's devisions"/>
         </Border>
+        <Label Name="lblDevisions"
+               Margin="-200, 270, 0, 0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Content="Devisions info"
+            ></Label>
+        
         <Border
                 Name="brdFiguresHolder"
                 BorderBrush="DarkRed"
                 BorderThickness="10"
                 CornerRadius="5"
-                Margin="0,400,-150,0" 
-                Visibility="Visible" VerticalAlignment="Top" Height="102" 
-                HorizontalAlignment="Right" Width="104">
+                Margin="-150,400,0,0" 
+                Visibility="Visible" 
+                VerticalAlignment="Top" 
+                Height="102" 
+                HorizontalAlignment="Left" 
+            Width="104">
             <Image Name="imgFigures" Source="..\Images\Figures.png" Opacity="0.5" ToolTip="Shield's honor figures"/>
         </Border>
+        <Label Name="lblFigures"
+               Margin="-200, 400, 0, 0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Content="Figures info"
+            ></Label>
 
         <Button Height="35" 
                 HorizontalAlignment="Right" 
                 Margin="0,0,23,66" 
-                Name="btnStartRecognition" 
+                Name="btnContinueRecognition" 
                 VerticalAlignment="Bottom" 
                 Width="142" 
-                Click="On_btnStartRecognition_Click" 
-                
+                Click="On_btnContinueRecognition_Click"                 
                 Foreground="Black" 
                 BorderThickness="3" 
                 Visibility="Visible"                 
                 Opacity="0">
-            Start Recognition
+            Continue recognition
         </Button>
         <!--Background="DarkRed"-->
         <!-- ==============   Reflection recognition state ================= -->
