@@ -101,6 +101,7 @@
     <Compile Include="BLL\Colors\ColorRange.cs" />
     <Compile Include="BLL\Colors\ImageColorConverter.cs" />
     <Compile Include="BLL\Common.cs" />
+    <Compile Include="BLL\Devisions\DivisionDefiner.cs" />
     <Compile Include="BLL\Devisions\SectionCreator.cs" />
     <Compile Include="BLL\Figures\FigureDefiner.cs" />
     <Compile Include="BLL\ShieldForm\ShieldFormDefiner.cs" />

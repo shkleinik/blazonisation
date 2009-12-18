@@ -5,8 +5,6 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-
-
 namespace Blazonisation.DAL
 {
     using System;
@@ -21,7 +19,8 @@ namespace Blazonisation.DAL
     public class TemplatesManager
     {
         private const string CONNECTION_STRING = @"Data Source=(local)\SQLEXPRESS;Initial Catalog=Blazonisation; Integrated security=true;";
-        private const string SELECT_PATTERN = "SELECT * FROM Templates WHERE TemplateType = {0}";
+        private const string SELECT_PATTERN = "SELECT * FROM Templates WHERE TemplateType = {0} ORDER BY ID";
+        private const string SELECT_DEVISION = "SELECT * FROM Templates WHERE TemplateType = 2 AND MetaInfo = \'{0}\'";
 
         public static List<Template> GetTemlates(TemplateType type)
         {
@@ -58,6 +57,38 @@ namespace Blazonisation.DAL
             return templates;
         }
 
+        public static Template GetDevisionTemplateByCode(string devisionCode)
+        {
+            var query = String.Format(SELECT_DEVISION, devisionCode);
+
+            using (var cn = new SqlConnection(CONNECTION_STRING))
+            {
+                using (var cmd = new SqlCommand(query, cn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cn.Open();
+                    IDataReader reader = cmd.ExecuteReader();
+                    if (reader == null)
+                        throw new Exception("Database connection error");
+
+                    while(reader.Read())
+                    {
+                        return new Template
+                                   {
+                                       ID = (int) reader["ID"],
+                                       Image = GetBitmap((byte[]) reader["Image"]),
+                                       BitmapImage = GetBitmapImage((byte[]) reader["Image"]),
+                                       Description = (string) reader["Description"],
+                                       MetaInfo = (string) reader["MetaInfo"],
+                                       TemplateType = (TemplateType) (reader["TemplateType"])
+                                   };
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public static void AddTemplate(Template template)
         {
             var ms = new MemoryStream();
@@ -91,7 +122,7 @@ namespace Blazonisation.DAL
         {
             var bitmap = new BitmapImage();
             var strm = new MemoryStream();
-            
+
             var offset = 0;
             strm.Write(imageSource, offset, imageSource.Length - offset);
 

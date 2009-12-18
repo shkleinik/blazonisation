@@ -5,15 +5,16 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-using Blazonisation.DAL;
-
 namespace Blazonisation.BLL
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Windows.Media.Imaging;
-    using System.Collections.Generic;
+    using DAL;
+
 
     public static class Common
     {
@@ -22,10 +23,33 @@ namespace Blazonisation.BLL
             var bitMapImage = new BitmapImage();
             var ms = new MemoryStream();
 
-            bitmap.Save(ms, ImageFormat.Bmp);
-            bitMapImage.BeginInit();
-            bitMapImage.StreamSource = ms;
-            bitMapImage.EndInit();
+            try
+            {
+                bitmap.Save(ms, ImageFormat.Bmp);
+                bitMapImage.BeginInit();
+                bitMapImage.StreamSource = ms;
+                bitMapImage.EndInit();
+            }
+            catch (NotSupportedException e)
+            {
+                try
+                {
+                    bitMapImage = new BitmapImage();
+                    bitmap.Save(ms, ImageFormat.Png);
+                    bitMapImage.BeginInit();
+                    bitMapImage.StreamSource = ms;
+                    bitMapImage.EndInit();
+                }
+                catch (NotSupportedException e2)
+                {
+                    bitMapImage = new BitmapImage();
+                    bitmap.Save(ms, ImageFormat.Bmp);
+                    ms.Write(ms.ToArray(), 78, (int)(ms.Length - 78));
+                    bitMapImage.BeginInit();
+                    bitMapImage.StreamSource = ms;
+                    bitMapImage.EndInit();
+                }
+            }
 
             return bitMapImage;
         }
@@ -51,6 +75,16 @@ namespace Blazonisation.BLL
             }
 
             return bitmaps;
+        }
+
+        public static bool CompareColors(Color color1, Color color2)
+        {
+            return
+                ((color1.R == color2.R) &&
+                 (color1.G == color2.G) &&
+                 (color1.B == color2.B))
+                    ? true
+                    : false;
         }
     }
 }

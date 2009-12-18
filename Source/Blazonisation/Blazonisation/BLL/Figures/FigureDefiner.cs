@@ -1,14 +1,12 @@
 ﻿
 
-using Blazonisation.BLL.Colors;
 
 namespace Blazonisation.BLL.Figures
 {
     using System;
+    using Colors;
     using System.Collections.Generic;
     using System.Drawing;
-    using TM = DAL.TemplatesManager;
-    using Blazonisation.DAL;
 
     class FigureDefiner
     {
@@ -23,12 +21,18 @@ namespace Blazonisation.BLL.Figures
         private List<Bitmap> Models;
         private readonly int count;
 
+        public FigureDefiner(Bitmap bmp, int count)
+        {
+            this.count = count;
+            InitializeInputBMP(bmp);
+            InitializeModels();
+            InitializeResultOutput();
+        }
+
         public FigureDefiner(Bitmap bmp, List<Bitmap> bitmaps)
         {
-            this.count = bitmaps.Count;
+            count = bitmaps.Count;
             InitializeInputBMP(bmp);
-            //InitializeModels();
-            //CompareToModelCollection();
             Models = bitmaps;
             InitializeResultOutput();
         }
@@ -37,28 +41,20 @@ namespace Blazonisation.BLL.Figures
 
         private void InitializeInputBMP(Bitmap bmp)
         {
-            /// todo: reduce/seize input image
-            inputBMP = bmp;
+            
+            inputBMP = (Bitmap) bmp.GetThumbnailImage(200, 240, null, IntPtr.Zero);
+            /// todo: decolorize thumbnail image after scalling (=
+            //inputBMP.Save("THIS.BMP");
         }
 
         private void InitializeModels() // создаём коллекцию эталонов
         {
-            //Models = new List<Bitmap>();
-            //for (var i = 0; i < count; i++) // figure quantity
-            //{
-            //    var bmp = new Bitmap("models\\figure" + (i + 1) + ".bmp");
-            //    Models.Add(bmp);
-            //}
-
-            var templates = TM.GetTemlates(TemplateType.Figures);
-            var bitmaps = new List<Bitmap>();
-
-            foreach (var template in templates)
+            Models = new List<Bitmap>();
+            for (var i = 0; i < count; i++) // figure quantity
             {
-                bitmaps.Add(template.Image);
+                var bmp = new Bitmap("models\\figure" + (i + 1) + ".bmp");
+                Models.Add(bmp);
             }
-
-            Models = bitmaps;
         }
 
         private void InitializeResultOutput() // форматируем строку вывода с трёмя лучшими значениями
@@ -159,56 +155,6 @@ namespace Blazonisation.BLL.Figures
 
         #endregion
 
-        #region Algorythm 2b
-
-        private void CompareToModelCollection() // сравниваем входной битмап с коллекцией эталонов
-        {
-            resultArray = new double[Models.Count];
-            for (var k = 0; k < Models.Count; k++)
-            {
-                var res = CompareToModel(Models[k]);
-                resultArray[k] = res;
-            }
-        }
-
-        private double CompareToModel(Bitmap model) // сравниваем битмап с эталоном
-        {
-            /// todo: optimize algorythm
-            var pxCount = 0;
-            var sum = 0;
-
-            for (var y = 0; y < model.Height; y++) // считаем среднее значение для всех пискелей, что подпадают под эталон
-                for (var x = 0; x < model.Width; x++)
-                {
-                    if ((GetAveragePixel(model, x, y) < blackPixelTolerance) && (inputBMP.Height > y) && (inputBMP.Width > x))
-                    {
-                        sum += GetAveragePixel(inputBMP, x, y);
-                        pxCount++;
-                    }
-                }
-
-            var average = sum / pxCount;
-            double okPixelCount = 0; // чем больше счётчик, тем лучше в пользу данного варианта эталона
-            double averageDivSum = 0;
-
-            for (var y = 0; y < model.Height; y++)
-                for (var x = 0; x < model.Width; x++)
-                {
-                    if ((GetAveragePixel(model, x, y) < blackPixelTolerance) && (inputBMP.Height > y) && (inputBMP.Width > x))
-                    {
-                        //if (GetAveragePixel(inputBMP, x, y) > average)
-                        //{
-                        //    okPixelCount++;
-                        //}
-                        averageDivSum += Math.Abs(GetAveragePixel(inputBMP, x, y) - average);
-                    }
-                }
-
-            return (averageDivSum);
-        }
-
-        #endregion
-
         #region Algorythm 3b
 
         private int[] FindModelColorCoinsidence() // находим ИНДЕКС эталона, с которым какой-то цвет совпал лучше всего
@@ -260,7 +206,7 @@ namespace Blazonisation.BLL.Figures
 
         private double FindCoinsidePxPercent(Bitmap model, Color color) // ищем процент пикселей опред. цвета в пикселях эталона
         {
-            //double modelPxCount = 0;
+            double modelPxCount = 0;
             //double impPxCount = 0;
             double var = 0;
             for (var y = 0; y < model.Height; y++) // считаем среднее значение для всех пискелей, что подпадают под эталон
@@ -270,20 +216,11 @@ namespace Blazonisation.BLL.Figures
                         if (((CompareColors(GetColor(inputBMP, x, y), color)) && (GetAveragePixel(model, x, y) > blackPixelTolerance)) ||
                             ((!CompareColors(GetColor(inputBMP, x, y), color)) && (GetAveragePixel(model, x, y) < blackPixelTolerance)))
                             var++;
-                    //if ((y < inputBMP.Height) && (x < inputBMP.Width))
-                    //    if ((GetAveragePixel(model, x, y) < blackPixelTolerance))
-                    //    {
-                    //        modelPxCount++;
-                    //        if (CompareColors(GetColor(inputBMP, x, y), color))
-                    //        {
-                    //            //var c1 = GetColor(inputBMP, x, y);
-                    //            //var c2 = color;
-                    //            //var cc = CompareColors(c1, c2);
-                    //            impPxCount++;
-                    //        }
-                    //    }
+                    if ((GetAveragePixel(model, x, y) < blackPixelTolerance))
+                        modelPxCount++;
+
                 }
-            return var;
+            return var;//modelPxCount;
         }
 
         #endregion
@@ -293,10 +230,10 @@ namespace Blazonisation.BLL.Figures
         private static Color GetColor(Bitmap bmp, int x, int y)
         {
             return Color.FromArgb(
-                bmp.GetPixel(x, y).A,
-                bmp.GetPixel(x, y).R,
-                bmp.GetPixel(x, y).G,
-                bmp.GetPixel(x, y).B);
+                                 bmp.GetPixel(x, y).A,
+                                 bmp.GetPixel(x, y).R,
+                                 bmp.GetPixel(x, y).G,
+                                 bmp.GetPixel(x, y).B);
         }
 
         private static int GetAveragePixel(Bitmap bmp, int x, int y) // средний пиксель из расчёта по К, З, С

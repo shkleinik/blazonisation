@@ -5,7 +5,6 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-
 namespace Blazonisation.Forms
 {
     using System;
@@ -123,7 +122,7 @@ namespace Blazonisation.Forms
             SetRecognitionState(MSG_STARTED);
             FindShield();
             AnimateThumbnails();
-            AnimateLabels();
+            AnimateTextBlocks();
 
             cropSelector.Visibility = Visibility.Visible;
 
@@ -170,7 +169,7 @@ namespace Blazonisation.Forms
                 return;
 
             AnimateThumbnails();
-            AnimateLabels();
+            AnimateTextBlocks();
         }
         #endregion
 
@@ -283,7 +282,7 @@ namespace Blazonisation.Forms
             brdFiguresHolder.BeginAnimation(MarginProperty, figuresThicknessAnimation);
         }
 
-        private void AnimateLabels()
+        private void AnimateTextBlocks()
         {
             if (!isRecognitionStarted)
                 return;
@@ -304,7 +303,7 @@ namespace Blazonisation.Forms
                 AutoReverse = false
             };
 
-            lblShieldForm.BeginAnimation(MarginProperty, shieldThicknessAnimation);
+            tbShieldForm.BeginAnimation(MarginProperty, shieldThicknessAnimation);
 
             var colorsThicknessAnimation = new ThicknessAnimation
             {
@@ -314,7 +313,7 @@ namespace Blazonisation.Forms
                 AutoReverse = false
             };
 
-            lblColors.BeginAnimation(MarginProperty, colorsThicknessAnimation);
+            tbColors.BeginAnimation(MarginProperty, colorsThicknessAnimation);
 
             var devisionsThicknessAnimation = new ThicknessAnimation
             {
@@ -324,17 +323,17 @@ namespace Blazonisation.Forms
                 AutoReverse = false
             };
 
-            lblDevisions.BeginAnimation(MarginProperty, devisionsThicknessAnimation);
+            tbDevisions.BeginAnimation(MarginProperty, devisionsThicknessAnimation);
 
             var figuresThicknessAnimation = new ThicknessAnimation
             {
                 From = brdFiguresHolder.Margin,
-                To = new Thickness(x, figuresY, 0, 0),
+                To = new Thickness(x + 230, figuresY, 0, 0),
                 Duration = new Duration(TimeSpan.Parse(animationDuratation)),
                 AutoReverse = false
             };
 
-            lblFigures.BeginAnimation(MarginProperty, figuresThicknessAnimation);
+            tbFigures.BeginAnimation(MarginProperty, figuresThicknessAnimation);
         }
 
         private void ResetThumbnails()
@@ -369,34 +368,62 @@ namespace Blazonisation.Forms
             btnContinueRecognition.BeginAnimation(OpacityProperty, buttonVisibilityAnimation);
         }
 
-        private static String ShowImportance(List<ColorDetails> possibleImportant, int sumHeightWidth)
+        private String GetColorsRecognitionResultText(List<ColorDetails> possibleImportant, int sumHeightWidth)
         {
-            var imp = ColorDetector.GetImportantColors(possibleImportant, sumHeightWidth);
-            string mes = "import: ";
-            foreach (var color in imp)
+            var importantColors = ColorDetector.GetImportantColors(possibleImportant, sumHeightWidth);
+            var message = String.Empty;
+            var resultBmp = new Bitmap(200, 200);
+
+            var colorsTemplates = TM.GetTemlates(TemplateType.Colors);
+            var coincidedColors = new List<Template>();
+
+            foreach (var colorTemplate in colorsTemplates)
             {
-                mes += color.ColorName + ",";
+                foreach (var importantColor in importantColors)
+                {
+                    if (importantColor.ColorName != colorTemplate.MetaInfo)
+                        continue;
+
+                    coincidedColors.Add(colorTemplate);
+                    message += String.Format("{0}: {1}\n", colorTemplate.MetaInfo, colorTemplate.Description);
+                    resultBmp = AddBitmaps(resultBmp, colorTemplate.Image);
+                }
             }
-            //MessageBox.Show(mes);
-            return mes;
+
+            imgColors.Source = C.ConvertBitmapToBitmapImage(resultBmp);
+
+            return message;
         }
 
-        private static string ShowResult(IList<List<ColorDetails>> colorDetailsList)
+        private static Bitmap AddBitmaps(Bitmap bitmap1, Bitmap bitmap2)
         {
-            string result = "import: ";
-            for (int i = 0; i < colorDetailsList.Count; i++)
+            var result = new Bitmap(bitmap1.Width, bitmap1.Height + bitmap2.Height);
+
+            // Is first time?
+            if (bitmap1.GetPixel(0, 0).R == 0 && bitmap1.GetPixel(0, 0).G == 0 && bitmap1.GetPixel(0, 0).B == 0)
+                return bitmap2;
+
+            // copy first part
+            for (var y = 0; y < bitmap1.Height; y++)
             {
-                result += "  \r\n for section " + i.ToString();
-                List<ColorDetails> importantColors = ColorDetector.GetImportantColors(colorDetailsList[i]);
-                foreach (var det in importantColors)
+                for (var x = 0; x < bitmap1.Width; x++)
                 {
-                    result += " \r\n name=" + det.ColorName + " pixels=" + det.PixelsOnImage;
+                    result.SetPixel(x, y, bitmap1.GetPixel(x, y));
                 }
-                result += " \r\n ====================== ";
             }
-            //MessageBox.Show(result);
+
+            // copy second part
+            for (var y = bitmap1.Height; y < bitmap1.Height + bitmap2.Height; y++)
+            {
+                for (var x = 0; x < bitmap1.Width; x++)
+                {
+                    result.SetPixel(x, y, bitmap2.GetPixel(x, y - bitmap1.Height));
+                }
+            }
+
             return result;
         }
+
         #endregion
 
         #region Recognition
@@ -425,36 +452,53 @@ namespace Blazonisation.Forms
         private void RecognizeElements(Bitmap shield)
         {
             Cursor = Cursors.Wait;
+
             // Define shield form
-            var shieldFormDefiner = new ShieldFormDefiner(shield);
-            MessageBox.Show(shieldFormDefiner.resultOutput);
-            lblShieldForm.Content = shieldFormDefiner.resultOutput;
+            var templatesShieldForm = TM.GetTemlates(TemplateType.ShieldForm);
+            var shieldFormDefiner = new ShieldFormDefiner(shield, C.ConvertTemplatesToBitmaps(templatesShieldForm));
+            var formIndex = shieldFormDefiner.GetRes();
+            tbShieldForm.Text = templatesShieldForm[formIndex].Description;
+            imgShield.Source = templatesShieldForm[formIndex].BitmapImage;
 
             // determine important colors
             var colorDetails = ColorDetails.GetColorDetailsFull(shield);
-            MessageBox.Show(ShowImportance(colorDetails, shield.Width + shield.Height));
-            lblColors.Content = ShowImportance(colorDetails, shield.Width + shield.Height);
+            tbColors.Text = GetColorsRecognitionResultText(colorDetails, shield.Width + shield.Height);
 
-            // Find shield devision
+            // return;
+
+            // Find shield devisions
             var colors = SectionCreator.GetSectionsArray(shield);
-            var colorDetailsList = new List<List<ColorDetails>>();
+            var colorDetailsForSections = new List<List<ColorDetails>>();
             for (var i = 0; i < colors.Length; i++)
             {
                 var details = ColorDetails.GetColorDetailsPixelPercentage(colors[i]);
-                colorDetailsList.Add(details);
+                colorDetailsForSections.Add(details);
             }
-            MessageBox.Show(ShowResult(colorDetailsList));
-            lblDevisions.Content = ShowResult(colorDetailsList);
+            // MessageBox.Show(GetDevisionCode(colorDetailsList));
+            var devisionDefiner = new DivisionDefiner(shield);
+            var devisionTemplate = TM.GetDevisionTemplateByCode(devisionDefiner.DevisionCode);
+            if(devisionTemplate == null)
+            {
+                tbDevisions.Text = "Высока вероятность того, что этот щит не разделен.";
+                imgDevision.Source = null;
+            }
+            else
+            {
+                tbDevisions.Text = devisionTemplate.Description;
+                imgDevision.Source = devisionTemplate.BitmapImage;
+            }
 
             // Define figures
             var templates = TM.GetTemlates(TemplateType.Figures);
             var shieldFiguresDefiner = new FigureDefiner(shield, C.ConvertTemplatesToBitmaps(templates));
+            tbFigures.Text = templates[shieldFiguresDefiner.resultOutputInt[0]].Description;
             imgFigures.Source = templates[shieldFiguresDefiner.resultOutputInt[0]].BitmapImage;
+            imgFigures2.Source = templates[shieldFiguresDefiner.resultOutputInt[1]].BitmapImage;
+            imgFigures3.Source = templates[shieldFiguresDefiner.resultOutputInt[2]].BitmapImage;
 
             SetRecognitionState(MSG_FINISHED);
             Cursor = Cursors.Arrow;
         }
-
         #endregion
     }
 }

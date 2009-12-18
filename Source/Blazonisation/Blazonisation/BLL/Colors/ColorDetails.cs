@@ -12,7 +12,7 @@ namespace Blazonisation.BLL.Colors
     using System.Drawing;
     using System.Linq;
 
-    public class ColorDetails
+    public class ColorDetails : IComparable
     {
         public Color Color;
         public string ColorName;
@@ -20,10 +20,10 @@ namespace Blazonisation.BLL.Colors
         public double PercentOnImage;
         public int RangeSum;
 
-        private static void InitPercentage(double imageSquare,ColorDetails details)
+        private static void InitPercentage(double imageSquare, ColorDetails details)
         {
             details.PercentOnImage = details.PixelsOnImage / imageSquare;
-        }        
+        }
 
         private static List<ColorDetails> InitPixelsAndRangeSum(Bitmap bitmap)
         {
@@ -58,7 +58,7 @@ namespace Blazonisation.BLL.Colors
                     //init color RangeSum
                     int xRange = Math.Abs(imageCenter.X - x);
                     int yRange = Math.Abs(imageCenter.Y - y);
-                    details.RangeSum += xRange + yRange;                    
+                    details.RangeSum += xRange + yRange;
                 }
             }
             return colorDetails;
@@ -68,9 +68,9 @@ namespace Blazonisation.BLL.Colors
         {
             List<ColorDetails> colorDetails = new List<ColorDetails>();
             for (int x = 0; x < array.Count; x++)
-            {               
+            {
                 ColorDetails details = new ColorDetails();
-                Color c =array[x];
+                Color c = array[x];
                 c = ColorRange.GetTrueColorByColor(c);
                 List<ColorDetails> hasColor = colorDetails.Where(findC => (findC.Color.R == c.R
                                                                            && findC.Color.G == c.G
@@ -89,8 +89,8 @@ namespace Blazonisation.BLL.Colors
                     //ColorRange.SetDefaultColors();
                     details.ColorName = ColorRange.GetColorNameByTrueColor(c);
                     colorDetails.Add(details);
-                }                   
-                
+                }
+
             }
             return colorDetails;
         }
@@ -110,9 +110,23 @@ namespace Blazonisation.BLL.Colors
             List<ColorDetails> colorDetailsList = InitPixelsAndRangeSum(bitmap);
             foreach (var cd in colorDetailsList)
             {
-                InitPercentage(bitmap.Width*bitmap.Height, cd);
+                InitPercentage(bitmap.Width * bitmap.Height, cd);
             }
             return colorDetailsList;
         }
+
+        #region Implementation of IComparable
+
+        public int CompareTo(object obj)
+        {
+            if (!(obj is ColorDetails))
+
+                throw new ArgumentException("object is not a Temperature");
+
+                var otherDetails = (ColorDetails)obj;
+                return PercentOnImage.CompareTo(otherDetails.PercentOnImage);
+        }
+
+        #endregion
     }
 }
