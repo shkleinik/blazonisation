@@ -68,7 +68,7 @@
                 <MenuItem Header="Exit" Name="miExit" Click="On_miExit_Click"/>
             </MenuItem>
             <MenuItem Header="Tamplates manager" Name="miTemplatesManager" Click="On_miManageTemplates_Click">
-                
+
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="Help" Name="miHelp" Click="On_miHelp_Click"/>
@@ -114,16 +114,17 @@
                 Margin="-150,5,0,0" 
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top">
-            <Image Name="imgShield" Source="..\Images\Shield.png" Opacity="0.5" ToolTip="Shield's shape"/>
+            <Image Name="imgShield" Source="..\Images\Shield.png" Opacity="1" ToolTip="Shield's shape"/>
             <!--<Image Name="imgLoading" Source="..\Images\Loading.gif"/>-->
-            
+
         </Border>
-        <Label Name="lblShieldForm"
+        <TextBlock Name="tbShieldForm"
                Margin="-200, 5, 0, 0"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Content="Shield form info"
-            ></Label>
+               Text="Shield form info"
+               TextWrapping="Wrap"
+            ></TextBlock>
 
         <Border
                 Name="brdColorsHolder"
@@ -137,14 +138,15 @@
                 Width="104" 
                 Height="102" 
                 >
-            <Image Name="imgColors" Source="..\Images\Colors.png" Opacity="0.5" ToolTip="Shield's colors"/>            
+            <Image Name="imgColors" Source="..\Images\Colors.png" Opacity="1" ToolTip="Shield's colors"/>
         </Border>
-        <Label Name="lblColors"
+        <TextBlock Name="tbColors"
                Margin="-200, 150, 0, 0"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Content="Colors info"
-            ></Label>
+               Text="Colors info"
+               TextWrapping="Wrap"
+            ></TextBlock>
 
         <Border
                 Name="brdDevisionHolder"
@@ -157,34 +159,40 @@
                 HorizontalAlignment="Left" 
                 Height="102"                 
                 Width="104">
-            <Image Name="imgDevision" Source="..\Images\Devision.png" Opacity="0.5" ToolTip="Shield's devisions"/>
+            <Image Name="imgDevision" Source="..\Images\Devision.png" Opacity="1" ToolTip="Shield's devisions"/>
         </Border>
-        <Label Name="lblDevisions"
+        <TextBlock Name="tbDevisions"
                Margin="-200, 270, 0, 0"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Content="Devisions info"
-            ></Label>
-        
+               Text="Devisions info"
+               TextWrapping="Wrap"
+            ></TextBlock>
+
         <Border
                 Name="brdFiguresHolder"
                 BorderBrush="DarkRed"
                 BorderThickness="10"
                 CornerRadius="5"
-                Margin="-150,400,0,0" 
+                Margin="-350,400,0,0" 
                 Visibility="Visible" 
                 VerticalAlignment="Top" 
                 Height="102" 
                 HorizontalAlignment="Left" 
-            Width="104">
-            <Image Name="imgFigures" Source="..\Images\Figures.png" Opacity="0.5" ToolTip="Shield's honor figures"/>
+                Width="312">
+            <StackPanel Orientation="Horizontal">
+                <Image Name="imgFigures" Source="..\Images\Figures.png" Opacity="1" ToolTip="Shield's honor figures" Width="100" Height="100"/>
+                <Image Name="imgFigures2" Source="..\Images\Figures.png" Opacity="0.5" ToolTip="Possible figures" Width="80" Height="70" VerticalAlignment="Bottom" />
+                <Image Name="imgFigures3" Source="..\Images\Figures.png" Opacity="0.5" ToolTip="Possible figures" Width="80" Height="70" VerticalAlignment="Bottom" />
+            </StackPanel>
         </Border>
-        <Label Name="lblFigures"
+        <TextBlock Name="tbFigures"
                Margin="-200, 400, 0, 0"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Content="Figures info"
-            ></Label>
+               Text="Figures info"
+               TextWrapping="Wrap"                   
+            ></TextBlock>
 
         <Button Height="35" 
                 HorizontalAlignment="Right" 

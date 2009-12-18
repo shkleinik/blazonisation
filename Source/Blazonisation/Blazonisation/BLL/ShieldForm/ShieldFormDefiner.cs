@@ -1,5 +1,5 @@
 ﻿//----------------------------------------------------------------------------------
-// <copyright file="ShieldFormDefiner.cs" company="BNTU Inc.">
+// <copyright file="TemplatesProvider.cs" company="BNTU Inc.">
 //     Copyright (c) BNTU Inc. All rights reserved.
 // </copyright>
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
@@ -7,106 +7,181 @@
 
 namespace Blazonisation.BLL.ShieldForm
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
+    using Colors;
 
-    public class ShieldFormDefiner
+    class ShieldFormDefiner
     {
-        #region Fields
-        public Bitmap inputBMP;
-        public string resultOutput;
-        #endregion
+        private Bitmap inputBMP;
+        private readonly List<Bitmap> models;
+        private List<ColorDetails> colorDetails;
+        private double[] zondValues;
 
-        #region Constructors
-        public ShieldFormDefiner(Bitmap bmp)
+        public ShieldFormDefiner(Bitmap bmp, List<Bitmap> models)
         {
+            InitializeInputBMP(bmp);
+            this.models = models;
+            InitializeZondValues();
+        }
+
+        private void InitializeZondValues()
+        {
+            var c = models.Count;
+            zondValues = new double[c];
+            for (var i = 0; i < c; i++)
+                zondValues[i] = GetZondsValues(models[i]);
+        }
+
+        private void InitializeInputBMP(Bitmap bmp)
+        {
+            //inputBMP = (Bitmap)bmp.GetThumbnailImage(199, 237, null, IntPtr.Zero);
             inputBMP = bmp;
-            resultOutput = DefineVerticalCrossings() + "_" + DefineHorizontalCrossings();
+            /// todo: decolorize thumbnail image after scalling (=
+            colorDetails = ColorDetails.GetColorDetailsFull(inputBMP);
         }
-        #endregion
 
-        #region Methods
-        /// <summary>
-        /// Находим точки смены цвета ВЕРТИКАЛЬНЫХ зондов
-        /// </summary>
-        /// <returns></returns>
-        private string DefineVerticalCrossings()
+        private bool IsOfMajorColor(int x, int y)
         {
-            var line1 = new ZondLine(true, inputBMP.Width / 20, inputBMP);
-            var line2 = new ZondLine(true, inputBMP.Width / 2, inputBMP);
-            var line3 = new ZondLine(true, inputBMP.Width * 19 / 20, inputBMP);
-            var line4 = new ZondLine(true, inputBMP.Width * 11 / 20, inputBMP);
-            var line5 = new ZondLine(true, inputBMP.Width * 9 / 20, inputBMP);
-            var lineH = new ZondLine(false, inputBMP.Height / 2, inputBMP);
-
-            var result1 = line1.FindColorChangeNumber(); // находим точки и их кол-во
-            var result2 = line2.FindColorChangeNumber();
-            var result3 = line3.FindColorChangeNumber();
-            var result4 = line4.FindColorChangeNumber();
-            var result5 = line5.FindColorChangeNumber();
-            //var resultH = lineH.FindColorChangeNumber();
-
-            var result1pts = line1.colorChangeArray; // загоняем найденные точки в массивы
-            var result2pts = line2.colorChangeArray;
-            var result3pts = line3.colorChangeArray;
-            //var result4pts = line4.colorChangeArray;
-            //var result5pts = line5.colorChangeArray;
-            var resultHpts = lineH.colorChangeArray;
-
-            var dif1 = result1pts[0].Y > inputBMP.Height / 2 ? 0 : 1; // выше ли точка половины щита?
-            var dif2 = result2pts[0].Y > inputBMP.Height / 2 ? 0 : 1;
-            var dif3 = result3pts[0].Y > inputBMP.Height / 2 ? 0 : 1;
-
-            int dif4; // растянут по горизонтали?
-            int dif5; // растянут по вертикали?    
-
-            if ((result2pts[1].Y - result2pts[0].Y) * (resultHpts[1].X - resultHpts[0].X) != 0)
+            var c = inputBMP.GetPixel(x, y);
+            foreach (var detail in colorDetails)
             {
-                dif4 = (result2pts[1].Y - result2pts[0].Y) / (resultHpts[1].X - resultHpts[0].X) < 1 ? 1 : 0;
-                dif5 = (result2pts[1].Y - result2pts[0].Y) / (resultHpts[1].X - resultHpts[0].X) > 1 ? 1 : 0;
+                if (CompareColors(detail.Color, c) && (detail.PercentOnImage > 0.2))
+                    return true;
             }
-            else
-            {
-                dif4 = (result2pts[0].Y - inputBMP.Height / 2) / (resultHpts[0].X - inputBMP.Width / 2) > 1 ? 1 : 0;
-                dif5 = (result2pts[0].Y - inputBMP.Height / 2) / (resultHpts[0].X - inputBMP.Width / 2) > 1 ? 1 : 0;
-            }
-
-            return result1 + "" + result2 + "" + result3 + "" + result4 + "" + result5 + "" +
-                   dif1 + "" + dif2 + "" + dif3 + "" + dif4;// +"" + dif5;// +"" + dif6;
+            return false;
         }
 
-        /// <summary>
-        /// Находим точки смены цвета ГОРИЗОНТАЛЬНЫХ зондов
-        /// </summary>
-        /// <returns></returns>
-        private string DefineHorizontalCrossings() 
+        public int FindBestPercentage()
         {
-            var line1 = new ZondLine(false, inputBMP.Height / 22, inputBMP);
-            var line2 = new ZondLine(false, inputBMP.Height / 2, inputBMP);
-            var line3 = new ZondLine(false, inputBMP.Height * 10 / 11, inputBMP);
-            var line4 = new ZondLine(false, inputBMP.Height * 10 / 22, inputBMP);
-            var line5 = new ZondLine(false, inputBMP.Height * 14 / 22, inputBMP);
-
-            var result1 = line1.FindColorChangeNumber();
-            var result2 = line2.FindColorChangeNumber();
-            var result3 = line3.FindColorChangeNumber();
-            var result4 = line4.FindColorChangeNumber();
-            var result5 = line5.FindColorChangeNumber();
-
-            var result1pts = line1.colorChangeArray;
-            var result2pts = line2.colorChangeArray;
-            var result3pts = line3.colorChangeArray;
-            var result4pts = line4.colorChangeArray;
-            //var result5pts = line5.colorChangeArray;
-
-            var dif1 = result1pts[0].X > inputBMP.Width / 2 ? 0 : 1;
-            var dif2 = result2pts[0].X > inputBMP.Width / 2 ? 0 : 1;
-            var dif3 = result3pts[0].X > inputBMP.Width / 2 ? 0 : 1;
-            var dif4 = result4pts[0].X > result2pts[0].X ? 1 : 0; // похож ли объект на ромбик? (=
-            var dif5 = result2pts[0].X < inputBMP.Width / 4 ? 0 : 1;
-
-            return result1 + "" + result2 + "" + result3 + "" + result4 + "" + result5 + "" +
-                   dif1 + "" + dif2 + "" + dif3 + "" + dif4 + "" + dif5;
+            var result = new double[models.Count];
+            for (var i = 0; i < models.Count; i++)
+                result[i] = FindPercentage(models[i]);
+            return FindMin(result);
         }
-        #endregion
+
+/*
+        private double FindPercentage2(Bitmap model) // ищем процент пикселей опред. цвета в пикселях эталона
+        {
+            inputBMP = (Bitmap)inputBMP.GetThumbnailImage(model.Width, model.Height, null, IntPtr.Zero); // вот когда размеры темплейтов будут одинаковыми, эту строчку СТЕРЕТЬ, Паша!
+            double count = 0;
+            var whitecount1 = 0;
+            var whitecount2 = 0;
+            for (var y = 0; y < model.Height; y++) // считаем среднее значение для всех пискелей, что подпадают под эталон
+                for (var x = 0; x < model.Width; x++)
+                {
+                    count++;
+                    if (GetAveragePixel(model, x, y) > 5)
+                        whitecount1++;
+                    if (!IsOfMajorColor(x, y))
+                        whitecount2++;
+                    //if ((y < inputBMP.Height) && (x < inputBMP.Width))
+                    //    if ((IsOfMajorColor(x, y) && (GetAveragePixel(model, x, y) > 5)) ||
+                    //        (!IsOfMajorColor(x, y) && (GetAveragePixel(model, x, y) < 5)))
+                    //        var++;
+                }
+            return (whitecount1 - whitecount2) / count;
+        }
+*/
+
+        private double FindPercentage(Bitmap model)
+        {
+            double modelPxCount = 0;
+            double inputBmpPxCount = 0;
+
+            inputBMP = (Bitmap)inputBMP.GetThumbnailImage(model.Width, model.Height, null, IntPtr.Zero); // вот когда размеры темплейтов будут одинаковыми, эту строчку СТЕРЕТЬ, Паша!
+            for (var y = 0; y < model.Height; y++)
+            {
+                for (var x = 0; x < model.Width; x++) //(int)(0.6 * model.Height)k
+                {
+                    if ((GetAveragePixel(model, x, y) < 5))
+                        modelPxCount++;
+                    if (IsOfMajorColor(x, y))
+                        inputBmpPxCount++;
+                }
+            }
+            return modelPxCount / inputBmpPxCount;//modelPxCount;
+        }
+
+        public int GetRes()
+        {
+            int index;
+            var res = GetZond();
+            //if (res > 0.8) index = 2;
+            //else index = res > 0.7 ? 1 : 0;
+            if (res > zondValues[2]) index = 2;
+            else index = res > zondValues[1] ? 1 : 0;
+            return index;
+        }
+
+        private double GetZond()
+        {
+            var x = inputBMP.Width / 10;
+            var y = inputBMP.Height;
+            do
+            {
+                y--;
+            } while (y > 0 && !isYRepeating(x, y));
+            var res = (double)y / inputBMP.Height;
+            return res;
+        }
+
+        private static double GetZondsValues(Bitmap input)
+        {
+            var x = input.Width / 10;
+            var y = input.Height;
+            do
+            {
+                y--;
+            } while (CompareColors(input.GetPixel(x, y), Color.White));
+            var res = (double)y / input.Height;
+            return res - 0.09;
+        }
+
+        private bool isYRepeating(int x, int y)
+        {
+            var tolerance = 70;
+            for (var ty = y; ty > y - tolerance; ty--)
+            {
+                if (CompareColors(inputBMP.GetPixel(x, ty), inputBMP.GetPixel(x, ty - 1)) &&
+                    !CompareColors(inputBMP.GetPixel(x, ty), Color.White))
+                    continue;
+                return false;
+            }
+            return true;
+        }
+
+        private static int FindMin(double[] array) // находим ИНДЕКС минимальное значение из массива результатов
+        {
+            double min = 10000000;
+            var index = 0;
+            for (var i = 0; i < array.Length; i++)
+            {
+                if (array[i] < min)
+                {
+                    min = array[i];
+                    index = i;
+                }
+            }
+            return index;
+        }
+
+        private static int GetAveragePixel(Bitmap bmp, int x, int y) // средний пиксель из расчёта по К, З, С
+        {
+            return (bmp.GetPixel(x, y).R + bmp.GetPixel(x, y).G + bmp.GetPixel(x, y).B) / 3;
+        }
+
+        private static bool CompareColors(Color color1, Color color2)
+        {
+            return
+                ((color1.R == color2.R) &&
+                 (color1.G == color2.G) &&
+                 (color1.B == color2.B))
+                    ? true
+                    : false;
+        }
     }
 }
+
+

@@ -5,7 +5,7 @@
 // <author>Alexander Kanaukou, Helen Grihanova, Maksim Zui, Pavel Shkleinik</author>
 //----------------------------------------------------------------------------------
 
-using Blazonisation.DAL;
+
 
 namespace Blazonisation.Forms
 {
@@ -15,7 +15,9 @@ namespace Blazonisation.Forms
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Input;
-    using System.Windows.Media;
+    using BLL.Devisions;
+    using DAL;
+    using BLL.Colors;
     using Microsoft.Win32;
     using C = BLL.Common;
     using TM = DAL.TemplatesManager;
@@ -67,17 +69,18 @@ namespace Blazonisation.Forms
 
             if (!File.Exists(tbPath.Text))
                 return;
+
             if (tbDescription.Text == TEXTBOX_DESC)
                 tbDescription.Text = String.Empty;
 
-
-            var template = new Template
-                               {
-                                   Description = tbDescription.Text,
-                                   Image = new Bitmap(tbPath.Text),
-                                   MetaInfo = Guid.NewGuid().ToString(),
-                                   TemplateType = (TemplateType)cbTypes.SelectedIndex
-                               };
+            var template = InitTemplate((TemplateType)cbTypes.SelectedIndex);
+            //= new Template
+            //                  {
+            //                      Description = tbDescription.Text,
+            //                      Image = new Bitmap(tbPath.Text),
+            //                      MetaInfo = Guid.NewGuid().ToString(),
+            //                      TemplateType = (TemplateType)cbTypes.SelectedIndex
+            //                  };
 
             TM.AddTemplate(template);
             tbDescription.Text = TEXTBOX_DESC;
@@ -144,7 +147,7 @@ namespace Blazonisation.Forms
                     MinHeight = 120//,
                 };
 
-                
+
                 var lblMetaInfo = new Label
                 {
                     Content = template.MetaInfo,
@@ -159,7 +162,7 @@ namespace Blazonisation.Forms
                     MinHeight = 120
                 };
 
-                
+
                 stackPanel.Children.Add(lblID);
                 stackPanel.Children.Add(img);
                 stackPanel.Children.Add(lblTemplateType);
@@ -168,6 +171,44 @@ namespace Blazonisation.Forms
 
                 spTemplates.Children.Add(stackPanel);
                 spTemplates.Children.Add(new Separator());
+            }
+        }
+
+        private Template InitTemplate(TemplateType templateType)
+        {
+            switch (templateType)
+            {
+                case TemplateType.Devisions:
+                    var devisionDefiner = new DivisionDefiner(new Bitmap(tbPath.Text));
+
+                    return new Template
+                     {
+                         Description = tbDescription.Text,
+                         Image = new Bitmap(tbPath.Text),
+                         MetaInfo = devisionDefiner.DevisionCode,
+                         TemplateType = (TemplateType)cbTypes.SelectedIndex
+                     };
+
+                case TemplateType.Colors:
+                    var shield = new Bitmap(tbPath.Text);
+                    var trueColor = ColorRange.GetTrueColorByColor(shield.GetPixel(0, 0));
+
+                    return new Template
+                    {
+                        Description = tbDescription.Text,
+                        Image = new Bitmap(tbPath.Text),
+                        MetaInfo = trueColor.Name,
+                        TemplateType = (TemplateType)cbTypes.SelectedIndex
+                    };
+
+                default:
+                    return new Template
+                     {
+                         Description = tbDescription.Text,
+                         Image = new Bitmap(tbPath.Text),
+                         MetaInfo = Guid.NewGuid().ToString(),
+                         TemplateType = templateType
+                     };
             }
         }
         #endregion
